@@ -143,11 +143,12 @@ TODO
 - [ ] Publish to PyPI
 - [ ] Setup GitHub Actions
 - [ ] Setup Codecov
+- [ ] Support Python < 3.11
 - [ ] Support multiple versions of `python-statemachine` (not tested)
 
 ## Requirements
 
-- Python 3.10+
+- Python 3.11+
 - [python-statemachine](https://pypi.org/project/python-statemachine/)
 
 ## Related Projects
