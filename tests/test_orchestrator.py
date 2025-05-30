@@ -1,7 +1,7 @@
-from tests.utils import OrchestratorAB, Dummy, MachineA, MachineB
+from tests.utils import Dummy, MachineA, MachineB, OrchestratorAB
 
 
-def test_machine_initialization_and_states():
+def test_machine_initialization_and_states() -> None:
     dummy = Dummy()
     orch = OrchestratorAB(
         a=MachineA(model=dummy, state_field="a_state"),
@@ -17,7 +17,7 @@ def test_machine_initialization_and_states():
     assert orch.b.current_state_value == "X2"
 
 
-def test_machine_classes_property():
+def test_machine_classes_property() -> None:
     dummy = Dummy()
     orch = OrchestratorAB(
         a=MachineA(model=dummy, state_field="a_state"),
@@ -28,7 +28,7 @@ def test_machine_classes_property():
     assert orch.machine_classes["b"] is MachineB
 
 
-def test_orchestrator_name_property():
+def test_orchestrator_name_property() -> None:
     dummy = Dummy()
     orch = OrchestratorAB(
         a=MachineA(model=dummy, state_field="a_state"),
@@ -37,7 +37,7 @@ def test_orchestrator_name_property():
     assert orch.orchestrator_name == "orc"
 
 
-def test_machines_property():
+def test_machines_property() -> None:
     dummy = Dummy()
     orch = OrchestratorAB(
         a=MachineA(model=dummy, state_field="a_state"),
@@ -48,7 +48,7 @@ def test_machines_property():
     assert isinstance(orch.machines["b"], MachineB)
 
 
-def test_patch_send_and_put_nonblocking():
+def test_patch_send_and_put_nonblocking() -> None:
     dummy = Dummy()
     orch = OrchestratorAB(
         a=MachineA(model=dummy, state_field="a_state"),
@@ -60,7 +60,7 @@ def test_patch_send_and_put_nonblocking():
     assert hasattr(orch.b, "_put_nonblocking")
 
 
-def test_perform_initial_checks():
+def test_perform_initial_checks() -> None:
     dummy = Dummy()
     orch = OrchestratorAB(
         a=MachineA(model=dummy, state_field="a_state"),

@@ -1,14 +1,17 @@
-class StateFieldIsNotUnique(Exception):
-    pass
+"""Exceptions for the State Machines Orchestrator."""
 
 
-class AnnotationIsNotAStateMachine(Exception):
-    pass
+class StateFieldIsNotUniqueError(Exception):
+    """The state field is not unique across all machines."""
 
 
-class UnexpectedAnnotationType(Exception):
-    pass
+class AnnotationIsNotAStateMachineError(Exception):
+    """The annotation is not a subclass of StateMachine."""
 
 
-class NoMachinesOnOrchestrator(Exception):
-    pass
+class UnexpectedAnnotationTypeError(Exception):
+    """The annotation type is not a subclass of StateMachine nor a str."""
+
+
+class NoMachinesOnOrchestratorError(Exception):
+    """No machines found on the orchestrator class."""
