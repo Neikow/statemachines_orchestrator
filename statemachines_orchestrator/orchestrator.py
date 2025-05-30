@@ -49,7 +49,7 @@ class _OrchestratorType(type):
         for machine_name, machine_class in _machine_classes.items():
             if not issubclass(machine_class, StateMachine):
                 raise AnnotationIsNotAStateMachine(
-                    f"Annotation {machine_name} is not a dataclass"
+                    f"Annotation '{machine_name}' is not a subclass of StateMachine"
                 )
 
         setattr(cls, MACHINE_CLASSES, _machine_classes)
@@ -62,7 +62,7 @@ class Orchestrator(metaclass=_OrchestratorType):
     """The state machines orchestrator class."""
 
     def __post_init__(self):
-        self._check_all_machines_state_fields_are_unique()
+        self._perform_initial_checks()
         self._patch_machines()
 
     @property

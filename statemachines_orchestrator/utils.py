@@ -15,7 +15,9 @@ def _get_machines_annotations(
 
 @lru_cache
 def _get_types(cls: type) -> dict[str, type]:
-    typing = sys.modules["typing"]
+    typing = sys.modules.get("typing")
+    if typing is None:
+        raise ModuleNotFoundError("The 'typing' module is not available in sys.modules.")
     return typing.get_type_hints(cls)
 
 
