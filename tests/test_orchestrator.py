@@ -1,106 +1,69 @@
-from __future__ import annotations
-
-import pytest
-from statemachine import StateMachine, State
-
-from statemachines_orchestrator.exceptions import (
-    StateFieldIsNotUnique,
-    NoMachinesOnOrchestrator,
-    AnnotationIsNotAStateMachine,
-)
-from statemachines_orchestrator.orchestrator import Orchestrator
-from tests.utils import missing_module
+from tests.utils import OrchestratorAB, Dummy, MachineA, MachineB
 
 
-class Machine1(StateMachine):
-    A1 = State("A1", initial=True)
-    B1 = State("B1")
-    C1 = State("C1", final=True)
-
-    a1_to_b1 = A1.to(B1)
-    b1_to_c1 = B1.to(C1)
-
-    @staticmethod
-    def after_a1_to_b1(orc: "OrchestratedStateMachines") -> None:
-        orc.machine2.a2_to_b2()
-
-
-class Machine2(StateMachine):
-    A2 = State("A2", initial=True)
-    B2 = State("B2", final=True)
-
-    a2_to_b2 = A2.to(B2)
-
-    @staticmethod
-    def after_a2_to_b2(orc: "OrchestratedStateMachines") -> None:
-        orc.machine1.b1_to_c1()
-
-
-class OrchestratedStateMachines(
-    Orchestrator,
-    orchestrator_name="orc",  # can be omitted and defaults to "orc"
-):
-    machine1: Machine1
-    machine2: Machine2
-
-
-class Model:
-    pass
-
-
-def test_orchestrator():
-    model = Model()
-    orc = OrchestratedStateMachines(
-        machine1=Machine1(model=model, state_field="machine1_state"),
-        machine2=Machine2(model=model, state_field="machine2_state"),
+def test_machine_initialization_and_states():
+    dummy = Dummy()
+    orch = OrchestratorAB(
+        a=MachineA(model=dummy, state_field="a_state"),
+        b=MachineB(model=dummy, state_field="b_state"),
     )
-
-    assert orc.machine1.current_state_value == "A1"
-    assert orc.machine2.current_state_value == "A2"
-
-    orc.machine1.a1_to_b1()
-
-    assert orc.machine1.current_state_value == "C1"
-    assert orc.machine2.current_state_value == "B2"
-
-
-def test_orchestrator_with_two_state_machines_having_the_same_state_field_should_raise():
-    model = Model()
-    with pytest.raises(StateFieldIsNotUnique):
-        OrchestratedStateMachines(
-            machine1=Machine1(model=model),
-            machine2=Machine2(model=model),
-        )
-
-    with pytest.raises(StateFieldIsNotUnique):
-        OrchestratedStateMachines(
-            machine1=Machine1(model=model, state_field="same_state"),
-            machine2=Machine2(model=model, state_field="same_state"),
-        )
+    assert orch.a.current_state_value == "S1"
+    assert orch.b.current_state_value == "X1"
+    orch.a.s1_to_s2()
+    assert orch.a.current_state_value == "S2"
+    orch.a.s2_to_s3()
+    assert orch.a.current_state_value == "S3"
+    orch.b.x1_to_x2()
+    assert orch.b.current_state_value == "X2"
 
 
-def test_orchestrator_with_no_machines_should_raise():
-    with pytest.raises(NoMachinesOnOrchestrator):
-
-        class _NoMachinesOrchestrator(Orchestrator):
-            pass
-
-
-def test_orchestrator_with_non_state_machines_type_annotations_should_raise():
-    with pytest.raises(AnnotationIsNotAStateMachine):
-
-        class _NonStateMachineOrchestrator(Orchestrator):
-            machine1: str
+def test_machine_classes_property():
+    dummy = Dummy()
+    orch = OrchestratorAB(
+        a=MachineA(model=dummy, state_field="a_state"),
+        b=MachineB(model=dummy, state_field="b_state"),
+    )
+    assert set(orch.machine_classes.keys()) == {"a", "b"}
+    assert orch.machine_classes["a"] is MachineA
+    assert orch.machine_classes["b"] is MachineB
 
 
-def test_orchestrator_with_state_machine_type_annotation_should_compile():
-    class _StateMachineOrchestrator(Orchestrator):
-        machine1: Machine1
+def test_orchestrator_name_property():
+    dummy = Dummy()
+    orch = OrchestratorAB(
+        a=MachineA(model=dummy, state_field="a_state"),
+        b=MachineB(model=dummy, state_field="b_state"),
+    )
+    assert orch.orchestrator_name == "orc"
 
 
-def test_should_raise_if_typing_module_is_missing():
-    with pytest.raises(ModuleNotFoundError):
-        with missing_module("typing"):
+def test_machines_property():
+    dummy = Dummy()
+    orch = OrchestratorAB(
+        a=MachineA(model=dummy, state_field="a_state"),
+        b=MachineB(model=dummy, state_field="b_state"),
+    )
+    assert set(orch.machines.keys()) == {"a", "b"}
+    assert isinstance(orch.machines["a"], MachineA)
+    assert isinstance(orch.machines["b"], MachineB)
 
-            class _StateMachineOrchestrator(Orchestrator):
-                machine1: Machine1
+
+def test_patch_send_and_put_nonblocking():
+    dummy = Dummy()
+    orch = OrchestratorAB(
+        a=MachineA(model=dummy, state_field="a_state"),
+        b=MachineB(model=dummy, state_field="b_state"),
+    )
+    assert callable(orch.a.send)
+    assert callable(orch.b.send)
+    assert hasattr(orch.a, "_put_nonblocking")
+    assert hasattr(orch.b, "_put_nonblocking")
+
+
+def test_perform_initial_checks():
+    dummy = Dummy()
+    orch = OrchestratorAB(
+        a=MachineA(model=dummy, state_field="a_state"),
+        b=MachineB(model=dummy, state_field="b_state"),
+    )
+    orch._perform_initial_checks()

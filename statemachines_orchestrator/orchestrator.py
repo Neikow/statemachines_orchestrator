@@ -1,4 +1,4 @@
-import sys
+import dataclasses
 import typing
 from functools import partial, wraps
 from typing import Any
@@ -12,8 +12,6 @@ from statemachines_orchestrator.exceptions import (
     NoMachinesOnOrchestrator,
 )
 from statemachines_orchestrator.utils import (
-    _set_new_attribute,
-    _create_fn,
     _get_machines_annotations,
 )
 
@@ -25,42 +23,6 @@ DEFAULT_MACHINE_STATE_FIELD = "state"
 
 
 class _OrchestratorType(type):
-    def _add_init_method(cls, machine_classes: dict[str, type[StateMachine]]):
-        body_lines = []
-
-        for machine_name, machine_class in machine_classes.items():
-            body_lines.append(f"self.{machine_name} = {machine_name}")
-
-        if not body_lines:
-            raise NoMachinesOnOrchestrator(f"{cls.__name__} has no machines")
-
-        body_lines += ["self._patch_machines()", "self._perform_initial_checks()"]
-
-        print(len(sys.modules.keys()))
-
-        print(cls.__module__)
-
-        _globals = sys.modules[cls.__module__].__dict__
-        _locals: dict = {}
-
-        args = ["self"] + list(
-            f"{machine_name}: {machine_class.__name__}"
-            for machine_name, machine_class in machine_classes.items()
-        )
-
-        _set_new_attribute(
-            cls,
-            DUNDER_INIT,
-            _create_fn(
-                DUNDER_INIT,
-                args,
-                body_lines,
-                locals=_locals,
-                globals=_globals,
-                return_type=None,
-            ),
-        )
-
     def __new__(
         mcs,
         name: str,
@@ -72,28 +34,25 @@ class _OrchestratorType(type):
         if not bases:
             return super().__new__(mcs, name, bases, namespace)
 
-        cls = super().__new__(mcs, name, bases, namespace)
-
-        cls_annotations = namespace.get("__annotations__", {})
-
-        maybe_machine_classes = _get_machines_annotations(
-            cls,
-            cls_annotations,
+        cls: type = dataclasses.dataclass(
+            super().__new__(mcs, name, bases, namespace)  # type: ignore[arg-type]
         )
 
-        machine_classes: dict[str, type[StateMachine]] = {}
-        for machine_name, machine_class in maybe_machine_classes.items():
-            if not issubclass(machine_class, StateMachine):
-                raise AnnotationIsNotAStateMachine(
-                    f"{machine_name} is not a subclass of {StateMachine.__name__}"
-                )
-
-            machine_classes[machine_name] = machine_class
-
-        setattr(cls, MACHINE_CLASSES, machine_classes)
         setattr(cls, ORCHESTRATOR_NAME, orchestrator_name)
 
-        cls._add_init_method(machine_classes)
+        if not getattr(cls, "__dataclass_fields__"):
+            raise NoMachinesOnOrchestrator(f"No machines found on {cls.__name__} class")
+
+        cls_annotations = namespace.get("__annotations__", {})
+        _machine_classes = _get_machines_annotations(cls, cls_annotations)
+
+        for machine_name, machine_class in _machine_classes.items():
+            if not issubclass(machine_class, StateMachine):
+                raise AnnotationIsNotAStateMachine(
+                    f"Annotation '{machine_name}' is not a subclass of StateMachine"
+                )
+
+        setattr(cls, MACHINE_CLASSES, _machine_classes)
 
         return cls
 
@@ -101,6 +60,10 @@ class _OrchestratorType(type):
 @typing.dataclass_transform()
 class Orchestrator(metaclass=_OrchestratorType):
     """The state machines orchestrator class."""
+
+    def __post_init__(self):
+        self._perform_initial_checks()
+        self._patch_machines()
 
     @property
     def machine_classes(self) -> dict[str, type[StateMachine]]:
@@ -123,7 +86,10 @@ class Orchestrator(metaclass=_OrchestratorType):
             setattr(
                 machine_instance,
                 "send",
-                partial(method, **{self.orchestrator_name: self}),
+                partial(
+                    method,
+                    **{self.orchestrator_name: self},  # type: ignore[arg-type]
+                ),
             )
 
     def _patch_put_nonblocking(self) -> None:
