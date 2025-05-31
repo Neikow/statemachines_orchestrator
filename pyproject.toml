@@ -18,14 +18,13 @@ keywords = [
     "state machine",
     "python-statemachine",
 ]
+dependencies = [
+    "python-statemachine == 2.5.0",
+]
 
 [project.urls]
 Homepage = "https://github.com/Neikow/statemachines_orchestrator"
 Issues = "https://github.com/Neikow/statemachines_orchestrator/issues"
-
-dependencies = [
-    "python-statemachine == 2.5.0",
-]
 
 [dependency-groups]
 dev = [
