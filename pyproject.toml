@@ -1,9 +1,27 @@
 [project]
 name = "statemachines_orchestrator"
 version = "0.0.3"
-
 description = "An extension of `python-statemachine` with linking between machines."
 requires-python = ">=3.11"
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+licence = "MIT"
+license-files = [
+    "LICENSE*",
+]
+keywords = [
+    "statemachine",
+    "orchestrator",
+    "state machine",
+    "python-statemachine",
+]
+
+[project.urls]
+Homepage = "https://github.com/Neikow/statemachines_orchestrator"
+Issues = "https://github.com/Neikow/statemachines_orchestrator/issues"
 
 dependencies = [
     "python-statemachine == 2.5.0",

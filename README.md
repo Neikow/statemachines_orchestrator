@@ -1,5 +1,11 @@
 # State Machines Orchestrator
 
+[![Pypi Version](https://img.shields.io/pypi/v/statemachines-orchestrator.svg)](https://pypi.python.org/statemachines-orchestrator)
+[![License](https://img.shields.io/pypi/l/statemachines-orchestrator.svg)](https://github.com/Neikow/statemachines_orchestrator/blob/main/LICENSE)
+[![Supported Python Versions](https://img.shields.io/pypi/pyversions/statemachines-orchestrator.svg)](https://pypi.python.org/pypi/statemachines-orchestrator)
+[![Actions status](https://github.com/Neikow/statemachines_orchestrator/actions/workflows/test_and_coverage.yml/badge.svg)](https://github.com/Neikow/statemachines_orchestrator/actions)
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/Neikow/statemachines_orchestrator/main.svg)](https://results.pre-commit.ci/latest/github/Neikow/statemachines_orchestrator/main)
+
 A Python package that provides an elegant orchestration layer for managing multiple [python-statemachine](https://github.com/fgmacedo/python-statemachine) instances, enabling seamless communication and coordination between state machines.
 
 ## Overview
