@@ -33,6 +33,7 @@ First, create your individual state machines using the standard [python-statemac
 ```python
 from statemachine import StateMachine, State
 
+
 class OrderStateMachine(StateMachine):
     # States
     pending = State(initial=True)
@@ -46,6 +47,7 @@ class OrderStateMachine(StateMachine):
     ship = processing.to(shipped)
     deliver = shipped.to(delivered)
     cancel = pending.to(cancelled) | processing.to(cancelled)
+
 
 class PaymentStateMachine(StateMachine):
     # States
@@ -69,6 +71,7 @@ Use the `Orchestrator` class to coordinate your state machines:
 ```python
 from statemachines_orchestrator import Orchestrator
 
+
 class ECommerceOrchestrator(Orchestrator):
     order: OrderStateMachine
     payment: PaymentStateMachine
@@ -81,10 +84,7 @@ class ECommerceOrchestrator(Orchestrator):
 order_sm = OrderStateMachine()
 payment_sm = PaymentStateMachine()
 
-orchestrator = ECommerceOrchestrator(
-    order=order_sm,
-    payment=payment_sm
-)
+orchestrator = ECommerceOrchestrator(order=order_sm, payment=payment_sm)
 
 # Access individual machines
 print(orchestrator.order.current_state)  # pending
@@ -94,11 +94,13 @@ print(orchestrator.payment.current_state)  # unpaid
 # The orchestrator instance is automatically available in callbacks
 # and other `python-statemachine` handlers
 
+
 # For example, after an order is processed, the payment can be authorized:
 class OrderStateMachine(StateMachine):
     ...
+
     def after_process(self, orc: ECommerceOrchestrator):
-        orc.payment.authorize() # will move the payment state machine to 'authorized' if it's in 'unpaid'
+        orc.payment.authorize()  # will move the payment state machine to 'authorized' if it's in 'unpaid'
 ```
 
 ## Advanced Usage
@@ -111,6 +113,7 @@ You can customize the name used to access the orchestrator within state machine 
 class ECommerceOrchestrator(Orchestrator, orchestrator_name="coordinator"):
     order: OrderStateMachine
     payment: PaymentStateMachine
+
 
 # Now accessible as 'coordinator' in callbacks instead of default 'orc'
 ```
@@ -130,7 +133,7 @@ class OrderStateMachine(StateMachine):
 
     def before_processing(self, orc: ECommerceOrchestrator):
         # Access other state machines through orchestrator
-        if orc.payment.current_state.id == 'authorized':
+        if orc.payment.current_state.id == "authorized":
             orc.payment.capture()
 ```
 
